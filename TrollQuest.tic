@@ -237,7 +237,7 @@ function init_level()
   boulder_spawn_active = false
   
   -- 🚪 PORTA FINAL em posição visível e acessível!
-  goal={x=220,y=110,w=10,h=15}
+  goal={x=235,y=75,w=10,h=15}
  end
 end
 
@@ -339,42 +339,49 @@ end
 
 function draw_trophy(x, y)
   if trophy and not trophy.collected then
-    -- Sombra
-    line(x+2, y+9, x+6, y+9, 0)
     
-    -- Base do pedestal
+    -- sombra
+    line(x+2, y+9, x+6, y+9, 0)
+
+    -- base maior
     rect(x+1, y+6, 6, 3, 9)
     rectb(x+1, y+6, 6, 3, 4)
-    
-    -- Taça (corpo)
-    rect(x+2, y+3, 4, 3, 14)
-    
-    -- Taça (topo)
-    tri(x+1, y+3, x+7, y+3, x+4, y+1, 14)
-    
-    -- Alças
+
+    -- coluna (haste do troféu)
+    rect(x+3, y+4, 2, 2, 9)
+
+    -- taça (corpo arredondado)
+    tri(x+2, y+4, x+6, y+4, x+4, y+1, 14)
+    tri(x+2, y+3, x+6, y+3, x+4, y+1, 14)
+    pix(x+3, y+2, 14)
+    pix(x+5, y+2, 14)
+
+    -- alças laterais (mais suaves)
+    pix(x+1, y+3, 9)
     pix(x+1, y+4, 9)
+    pix(x+6, y+3, 9)
     pix(x+6, y+4, 9)
-    
-    -- Brilho animado
-    local blink = math.floor(trophy.frame/8)%3
-    if blink==0 then
-      pix(x+3, y+2, 15)
-      pix(x+5, y+4, 15)
-    elseif blink==1 then
-      pix(x+2, y+3, 15)
-      pix(x+6, y+5, 15)
-    else
+
+    -- borda superior (borda da taça)
+    line(x+3, y+1, x+5, y+1, 4)
+
+    -- brilho animado
+    local blink = (trophy.frame//8)%3
+    if blink == 0 then
       pix(x+4, y+2, 15)
-      pix(x+3, y+5, 15)
+    elseif blink == 1 then
+      pix(x+3, y+3, 15)
+    else
+      pix(x+5, y+3, 15)
     end
-    
-    -- Partículas douradas flutuando ao redor
-    if math.random(1,5)==1 then
-      add_particle(x+math.random(0,8), y+math.random(0,8), 14)
+
+    -- partículas douradas
+    if math.random(1,6)==1 then
+      add_particle(x + math.random(0,7), y + math.random(0,7), 14)
     end
   end
 end
+
 
 function TIC()
  if p.dead then
