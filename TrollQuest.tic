@@ -90,14 +90,13 @@ function init_level()
   
   -- REDUZIDO: Apenas 1 spike fixo
   add_spike(130,62,8,8)
+  add_spike(110,112,8,8)
+  add_spike(160,112,8,8)
   
-  add_fake_block(140,70,16,8)
   add_falling_spike_trigger(70,70,75)
-  
+  add_falling_spike_trigger(2, 190, 205)
   -- Espinhos do chão
   add_ground_spike(50,120,48)
-  add_ground_spike(110,120,108)
-  add_ground_spike(160,120,158)
   
   goal={x=220,y=35,w=10,h=15}
   
