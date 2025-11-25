@@ -53,19 +53,31 @@ function init_level()
  boulder_spawn_timer=0
  boulder_spawn_active=false
  
- -- reset player position for each level
- if level==1 then
-  p.x=20
-  p.y=100
-  
-  add_platform(0,120,80,16)
-  add_platform(120,120,120,16)
-  add_disappearing_floor(80,120,40,16,50)
-  
-  -- Espinho que sai do chão
-  add_ground_spike(150,120,145)
-  
-  goal={x=220,y=100,w=10,h=15}
+ if level == 1 then
+  -- posição inicial
+  p.x = 20
+  p.y = 100
+
+  -- SOLO ESQUERDO
+  -- Plataforma normal antes do buraco
+  add_platform(0, 120, 70, 16)
+
+  -- BURACO (de ~70 até ~150)
+  -- O vão permanece sem chão sólido aqui
+
+  -- BLOCOS FALSOS NO MEIO DO BURACO
+  -- Substituindo a plataforma móvel (w=40) por dois blocos falsos (w=20 cada)
+  add_fake_block(80, 100, 15, 10)   -- Primeiro bloco falso
+  add_fake_block(120, 100, 15, 10)  -- Segundo bloco falso logo em seguida
+
+  -- SOLO DIREITO (após o buraco)
+  add_platform(150, 120, 120, 16)
+
+  -- ESPINHO no lado direito
+  add_ground_spike(180, 120, 175)
+
+  -- GOAL (porta)
+  goal = {x = 220, y = 100, w = 10, h = 15}
   
  elseif level==2 then
   p.x=20
