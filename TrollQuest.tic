@@ -19,7 +19,7 @@
   death_count=0
 
   -- Level data
-  level=7
+  level=6
   spikes={}
   platforms={}
   goal={}
@@ -74,13 +74,13 @@
   add_spike(130,62,8,8)
   add_spike(110,112,8,8)
   add_spike(160,112,8,8)
-  add_falling_spike_trigger(1, 75, 70)
+  add_falling_spike_trigger(1, 60, 75)
   add_falling_spike_trigger(2, 190, 205)
   add_ground_spike(50,120,48)
   goal={x=220,y=35,w=10,h=15}
   
  elseif level == 3 then
-  -- NÍVEL 3 (RESTAURADO - O Antigo)
+  -- NÍVEL 3 
   p.x=20
   p.y=100
   
@@ -98,7 +98,7 @@
   
   -- Espinhos caindo (Atualizados para a nova função com ID)
   -- Sintaxe: id, trigger_x, spike_x
-  add_falling_spike_trigger(1, 73, 70)
+  add_falling_spike_trigger(1, 68, 75)
   add_falling_spike_trigger(2, 133, 130)
   
   -- Mais espinhos do chão
@@ -133,8 +133,8 @@
   
   -- Armadilhas
   add_falling_spike_trigger(1, 30, 50) 
-  add_falling_spike_trigger(2, 100, 125)
-  add_falling_spike_trigger(3, 180, 215)
+  add_falling_spike_trigger(2, 100, 115)
+  add_falling_spike_trigger(3, 200, 215)
   add_falling_spike_trigger(4, 250, 280)
 
   add_ground_spike(60, 150, 58) 
@@ -161,10 +161,10 @@
   add_fake_block(100,90,16,8)
   add_fake_block(132,70,16,8)
   
-  add_falling_spike_trigger(1, 43, 40)
-  add_falling_spike_trigger(2, 113, 110)
-  add_falling_spike_trigger(3, 153, 150)
-  add_falling_spike_trigger(4, 203, 200)
+  add_falling_spike_trigger(1, 35, 40)
+  add_falling_spike_trigger(2, 105, 110)
+  add_falling_spike_trigger(3, 145, 150)
+  add_falling_spike_trigger(4, 195, 200)
   
   add_disappearing_floor(120,120,20,16,130)
   
@@ -203,11 +203,11 @@
   add_fake_block(155,70,16,8)
   
   add_falling_spike_trigger(1, 38, 35)
-  add_falling_spike_trigger(2, 63, 60)
-  add_falling_spike_trigger(3, 98, 95)
-  add_falling_spike_trigger(4, 128, 125)
-  add_falling_spike_trigger(5, 158, 155)
-  add_falling_spike_trigger(6, 188, 185)
+  add_falling_spike_trigger(2, 55, 60)
+  add_falling_spike_trigger(3, 90, 95)
+  add_falling_spike_trigger(4, 120, 125)
+  add_falling_spike_trigger(5, 150, 155)
+  add_falling_spike_trigger(6, 200, 205)
   
   add_disappearing_floor(70,120,30,16,75)
   add_disappearing_floor(180,120,20,16,185)
