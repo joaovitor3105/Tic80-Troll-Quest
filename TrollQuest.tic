@@ -1,1104 +1,1151 @@
-  -- title:  Level Devil (+ Indiana Jones boulder level)
-  -- author: joaovitor3105 (modified/fixed)
-  -- desc:   Challenging platformer with traps (added rolling boulder level)
-  -- script: lua
+    -- title:  Level Devil (+ Indiana Jones boulder level)
+    -- author: joaovitor3105 (modified/fixed)
+    -- desc:   Challenging platformer with traps (added rolling boulder level)
+    -- script: lua
 
-  -- Player
-  p={
-  x=20,y=100,
-  w=8,h=8,
-  vx=0,vy=0,
-  grounded=false,
-  dead=false,
-  win=false,
-  dir=1,
-  frame=0
-  }
+    -- Player
+    p={
+    x=20,y=100,
+    w=8,h=8,
+    vx=0,vy=0,
+    grounded=false,
+    dead=false,
+    win=false,
+    dir=1,
+    frame=0
+    }
 
-  -- Stats
-  death_count=0
+    -- Stats
+    death_count=0
 
-  -- Level data
-  level=6
+    -- Level data
+    level=5
+    spikes={}
+    platforms={}
+    goal={}
+    moving_platforms={}
+    fake_blocks={}
+    falling_spikes={}
+    disappearing_floor={}
+    particles={}
+    ground_spikes={}
+    boulders={}
+    trophy=nil
+    boulder_spawn_timer=0
+    boulder_spawn_active=false
+
+    -- Camera
+    cam={x=0,y=0}
+
+  function init_level()
+  p.dead=false
+  p.win=false
+  p.grace=0 -- RESETANDO O COYOTE TIME
   spikes={}
   platforms={}
-  goal={}
   moving_platforms={}
   fake_blocks={}
   falling_spikes={}
   disappearing_floor={}
   particles={}
   ground_spikes={}
-  boulders={}
+  boulders={}  
   trophy=nil
   boulder_spawn_timer=0
   boulder_spawn_active=false
+  
+  if level == 1 then
+    -- NÍVEL 1 (Básico)
+    p.x = 20; p.y = 100
 
-  -- Camera
-  cam={x=0,y=0}
+    -- 1. Plataforma Inicial (Mais curta)
+    -- Antes ia até 70, agora vai até 50
+    add_platform(0, 120, 50, 16)
 
- function init_level()
- p.dead=false
- p.win=false
- p.grace=0 -- RESETANDO O COYOTE TIME
- spikes={}
- platforms={}
- moving_platforms={}
- fake_blocks={}
- falling_spikes={}
- disappearing_floor={}
- particles={}
- ground_spikes={}
- boulders={}  
- trophy=nil
- boulder_spawn_timer=0
- boulder_spawn_active=false
- 
- if level == 1 then
-  -- NÍVEL 1 (Básico)
-  p.x = 20; p.y = 100
-  add_platform(0, 120, 70, 16)
-  add_fake_block(80, 100, 15, 10)
-  add_fake_block(120, 100, 15, 10)
-  add_platform(150, 120, 120, 16)
-  add_ground_spike(180, 120, 175)
-  goal = {x = 220, y = 100, w = 10, h = 15}
-  
- elseif level==2 then
-  -- NÍVEL 2 (Espinhos caindo)
-  p.x=20; p.y=100
-  add_platform(0,120,240,16)
-  add_platform(60,90,40,8)
-  add_platform(120,70,40,8)
-  add_platform(180,50,60,8)
-  add_spike(130,62,8,8)
-  add_spike(110,112,8,8)
-  add_spike(160,112,8,8)
-  add_falling_spike_trigger(1, 60, 75)
-  add_falling_spike_trigger(2, 190, 205)
-  add_ground_spike(50,120,48)
-  goal={x=220,y=35,w=10,h=15}
-  
- elseif level == 3 then
-  -- NÍVEL 3 
-  p.x=20
-  p.y=100
-  
-  add_platform(0,120,80,16)
-  add_platform(180,120,60,16)
-  add_platform(60,90,40,8)
-  add_platform(180,50,60,8)
-  
-  -- Espinho fixo
-  add_spike(155,112,8,8)
-  
-  -- Plataformas Móveis (Atualizadas para a nova função com 'x')
-  add_moving_platform(100,100,32,8,100,150,0.3, 'x')
-  add_moving_platform(200,90,32,8,200,220,0.3, 'x')
-  
-  -- Espinhos caindo (Atualizados para a nova função com ID)
-  -- Sintaxe: id, trigger_x, spike_x
-  add_falling_spike_trigger(1, 68, 75)
-  add_falling_spike_trigger(2, 133, 130)
-  
-  -- Mais espinhos do chão
-  add_ground_spike(30,120,28)
-  add_ground_spike(50,120,48)
-  add_ground_spike(85,120,83)
-  add_ground_spike(190,120,188)
-  
-  goal={x=220,y=35,w=10,h=15} 
+    -- 2. Primeiro Fake Block (Alto)
+    add_fake_block(65, 95, 15, 10) 
 
- elseif level == 4 then
-  -- NÍVEL 4 (O "Sobe e Desce" Difícil)
-  p.x = 10
-  p.y = 110
-  
-  add_platform(0, 130, 40, 16)
+    -- 3. Chão que Some (A "Ponte" obrigatória)
+    -- Fica no meio do caminho e mais baixo (y=125). 
+    -- O jogador tem que pular do fake block para este, e correr antes que suma.
+    add_disappearing_floor(90, 125, 40, 16, 85)
 
-  -- Sobe e desce
-  add_moving_platform(50, 100, 24, 8, 80, 120, 0.5, 'y') 
-  add_moving_platform(90, 60, 24, 8, 40, 90, 0.6, 'y')
-  add_platform(120, 40, 20, 8)
+    -- 4. Segundo Fake Block (Alto e Longe)
+    -- Está no x=140. Do primeiro bloco (x=65) até aqui é impossível pular direto.
+    add_fake_block(140, 95, 15, 10)
 
-  -- O Poço
-  add_moving_platform(150, 70, 20, 8, 50, 100, 0.4, 'y')
-  add_moving_platform(180, 110, 20, 8, 90, 130, 0.4, 'y')
-  add_platform(200, 140, 30, 8)
+    -- 5. Plataforma Final (Mais curta e longe)
+    add_platform(170, 120, 70, 16)
 
-  -- Subida Final
-  add_moving_platform(240, 120, 24, 8, 230, 260, 0.8, 'x')
-  add_moving_platform(270, 90, 24, 8, 260, 290, 1.0, 'x')
-  add_platform(300, 60, 40, 16)
-  
-  -- Armadilhas
-  add_falling_spike_trigger(1, 30, 50) 
-  add_falling_spike_trigger(2, 100, 115)
-  add_falling_spike_trigger(3, 200, 215)
-  add_falling_spike_trigger(4, 250, 280)
+    -- Espinho final (ajustado para a nova posição do chão)
+    add_ground_spike(200, 120, 195)
 
-  add_ground_spike(60, 150, 58) 
-  add_spike(310, 30, 8, 8)
-  
-  goal = {x = 320, y = 45, w = 10, h = 15}
-
- elseif level==5 then
-  -- NÍVEL 5 (Chão que some)
-  p.x=20; p.y=100
-  
-  add_platform(0,120,80,16)
-  add_platform(100,120,140,16)
-  add_platform(90,90,20,8)
-  add_platform(140,70,30,8)
-  add_platform(190,50,50,8)
-  
-  add_spike(105,112,8,8)
-  add_spike(172,62,8,8)
-  
-  add_moving_platform(50,100,20,8,50,120,0.4, 'x')
-  add_moving_platform(180,80,20,8,180,210,0.3, 'x')
-  
-  add_fake_block(100,90,16,8)
-  add_fake_block(132,70,16,8)
-  
-  add_falling_spike_trigger(1, 35, 40)
-  add_falling_spike_trigger(2, 105, 110)
-  add_falling_spike_trigger(3, 145, 150)
-  add_falling_spike_trigger(4, 195, 200)
-  
-  add_disappearing_floor(120,120,20,16,130)
-  
-  add_ground_spike(30,120,28)
-  add_ground_spike(55,120,53)
-  add_ground_spike(82,120,80)
-  add_ground_spike(125,120,123)
-  add_ground_spike(150,120,148)
-  add_ground_spike(180,120,178)
-  add_ground_spike(210,120,208)
-  
-  goal={x=220,y=30,w=10,h=15}
-  
- elseif level==6 then
-  -- NÍVEL 6 (Inferno de espinhos)
-  p.x=20; p.y=100
-  
-  add_platform(0,120,40,16)
-  add_platform(70,120,30,16)
-  add_platform(130,120,110,16)
-  add_platform(50,90,30,8)
-  add_platform(100,80,25,8)
-  add_platform(145,70,30,8)
-  add_platform(190,50,50,8)
-  
-  add_spike(42,112,8,8)
-  add_spike(135,112,8,8)
-  add_spike(168,62,8,8)
-  
-  add_moving_platform(30,100,20,8,30,60,0.5, 'x')
-  add_moving_platform(85,90,20,8,85,115,0.4, 'x')
-  add_moving_platform(175,80,20,8,175,210,0.35, 'x')
-  
-  add_fake_block(60,90,16,8)
-  add_fake_block(110,80,16,8)
-  add_fake_block(155,70,16,8)
-  
-  add_falling_spike_trigger(1, 38, 35)
-  add_falling_spike_trigger(2, 55, 60)
-  add_falling_spike_trigger(3, 90, 95)
-  add_falling_spike_trigger(4, 120, 125)
-  add_falling_spike_trigger(5, 150, 155)
-  add_falling_spike_trigger(6, 200, 205)
-  
-  add_disappearing_floor(70,120,30,16,75)
-  add_disappearing_floor(180,120,20,16,185)
-  
-  add_ground_spike(10,120,8)
-  add_ground_spike(28,120,26)
-  add_ground_spike(52,120,50)
-  add_ground_spike(75,120,73)
-  add_ground_spike(82,120,80)
-  add_ground_spike(105,120,103)
-  add_ground_spike(140,120,138)
-  add_ground_spike(155,120,153)
-  add_ground_spike(170,120,168)
-  add_ground_spike(195,120,193)
-  add_ground_spike(210,120,208)
-  
-  goal={x=220,y=25,w=10,h=15}
-
- elseif level==7 then
-  -- NÍVEL 7 (Indiana Jones - O FIM)
-  p.x=20; p.y=88
-  
-  add_platform(0,110,70,10)
-  add_platform(90,110,60,10)
-  add_platform(170,110,60,10)
-  add_platform(250,110,70,10)
-  
-  add_platform(75,95,12,6)
-  add_platform(155,95,12,6)
-  add_platform(235,95,12,6)
-  
-  add_ground_spike(100,110,98)
-  add_ground_spike(180,110,178)
-  add_ground_spike(260,110,258)
-  add_fake_block(145,110,16,8)
-  
-  trophy = {x=35, y=95, w=8, h=8, collected=false, frame=0}
-  
-  boulder_spawn_timer = 0
-  boulder_spawn_active = false
-  
-  goal={x=235,y=75,w=10,h=15}
- end
-end
-
-  function add_platform(x,y,w,h)
-  table.insert(platforms,{x=x,y=y,w=w,h=h})
-  end
-
-  function add_spike(x,y,w,h)
-  table.insert(spikes,{x=x,y=y,w=w,h=h})
-  end
-
-  function add_moving_platform(x, y, w, h, lim1, lim2, spd, axis)
-  table.insert(moving_platforms, { 
-    x = x, y = y, w = w, h = h,
-    lim1 = lim1,  -- Limite inicial (Esquerda ou Topo)
-    lim2 = lim2,  -- Limite final (Direita ou Baixo)
-    spd = spd,
-    axis = axis or 'x', -- Se não informar, assume que é horizontal ('x')
-    dir = 1
-  })
-  end
-
-  function update_moving_platforms()
-  for mp in all(moving_platforms) do
+    goal = {x = 220, y = 100, w = 10, h = 15}
+  elseif level==2 then
+    -- NÍVEL 2 (Espinhos caindo)
+    p.x=20; p.y=100
+    add_platform(0,120,240,16)
+    add_platform(60,90,40,8)
+    add_platform(120,70,40,8)
+    add_platform(180,50,60,8)
+    add_spike(130,62,8,8)
+    add_spike(110,112,8,8)
+    add_spike(160,112,8,8)
+    add_falling_spike_trigger(1, 60, 75)
+    add_falling_spike_trigger(2, 190, 205)
+    add_ground_spike(50,120,48)
+    goal={x=220,y=35,w=10,h=15}
     
-    -- 1. Calcula o movimento deste frame
-    local amount = mp.spd * mp.dir
+  elseif level == 3 then
+    -- NÍVEL 3 
+    p.x=20
+    p.y=100
     
-    -- Zera os valores de movimento antes de calcular
-    mp.move_x = 0
-    mp.move_y = 0
+    add_platform(0,120,80,16)
+    add_platform(180,120,60,16)
+    add_platform(60,90,40,8)
+    add_platform(180,50,60,8)
+    
+    -- Espinho fixo
+    add_spike(155,112,8,8)
+    
+    -- Plataformas Móveis (Atualizadas para a nova função com 'x')
+    add_moving_platform(100,100,32,8,100,150,0.3, 'x')
+    add_moving_platform(200,90,32,8,200,220,0.3, 'x')
+    
+    -- Espinhos caindo (Atualizados para a nova função com ID)
+    -- Sintaxe: id, trigger_x, spike_x
+    add_falling_spike_trigger(1, 68, 75)
+    add_falling_spike_trigger(2, 133, 130)
+    
+    -- Mais espinhos do chão
+    add_ground_spike(30,120,28)
+    add_ground_spike(50,120,48)
+    add_ground_spike(85,120,83)
+    add_ground_spike(190,120,188)
+    
+    goal={x=220,y=35,w=10,h=15} 
 
-    if mp.axis == 'x' then
-      -- MOVIMENTO HORIZONTAL
-      mp.x = mp.x + amount
-      mp.move_x = amount -- <--- SALVA O VALOR EXATO AQUI
+  elseif level == 4 then
+    -- NÍVEL 4 (O "Sobe e Desce" Difícil)
+    p.x = 10
+    p.y = 110
+    
+    add_platform(0, 130, 40, 16)
+
+    -- Sobe e desce
+    add_moving_platform(50, 100, 24, 8, 80, 120, 0.5, 'y') 
+    add_moving_platform(90, 60, 24, 8, 40, 90, 0.6, 'y')
+    add_platform(120, 40, 20, 8)
+
+    -- O Poço
+    add_moving_platform(150, 70, 20, 8, 50, 100, 0.4, 'y')
+    add_moving_platform(220, 100, 20, 8, 20, 130, 0.4, 'y')
+    add_platform(200, 140, 30, 8)
+    
+    -- Armadilhas
+    add_falling_spike_trigger(1, 30, 50) 
+    add_falling_spike_trigger(2, 100, 115)
+    add_falling_spike_trigger(3, 200, 215)
+    add_falling_spike_trigger(4, 250, 280)
+    add_ground_spike(190,120, 188)
+
+    add_ground_spike(60, 150, 58) 
+    add_spike(310, 30, 8, 8)
+    
+    goal = {x = 230, y = 5, w = 10, h = 15}
+    add_platform(170, 120, 70, 16)
+      add_platform(220, 20, 20, 8)
+
+
+  elseif level==5 then
+    -- NÍVEL 5 (Chão que some)
+    p.x=20; p.y=100
+    
+    add_platform(0,120,80,16)
+    add_platform(100,120,140,16)
+    add_platform(90,90,20,8)
+    add_platform(140,70,30,8)
+    add_platform(190,50,50,8)
+    
+    add_spike(115,112,8,8)
+    add_spike(160,62,8,8)
+    
+    add_moving_platform(50,100,20,8,50,120,0.4, 'x')
+    add_moving_platform(180,80,20,8,180,210,0.3, 'x')
+    
+    add_fake_block(100,90,16,8)
+    add_fake_block(132,70,16,8)
+    
+    add_falling_spike_trigger(1, 35, 40)
+    add_falling_spike_trigger(2, 105, 110)
+    add_falling_spike_trigger(3, 145, 150)
+    add_falling_spike_trigger(4, 200, 210)
+    
+    add_disappearing_floor(120,120,20,16,130)
+    
+    add_ground_spike(30,120,28)
+    add_ground_spike(55,120,53)
+    add_ground_spike(125,120,123)
+    add_ground_spike(150,120,148)
+    add_ground_spike(180,120,178)
+    add_ground_spike(210,120,208)
+    
+    goal={x=220,y=30,w=10,h=15}
+    
+  elseif level==6 then
+    -- NÍVEL 6 (Inferno de espinhos)
+    p.x=20; p.y=100
+    
+    add_platform(0,120,40,16)
+    add_platform(70,120,30,16)
+    add_platform(130,120,110,16)
+    add_platform(50,90,30,8)
+    add_platform(100,80,25,8)
+    add_platform(145,70,30,8)
+    add_platform(190,50,50,8)
+    
+    add_spike(42,112,8,8)
+    add_spike(135,112,8,8)
+    add_spike(168,62,8,8)
+    
+    add_moving_platform(30,100,20,8,30,60,0.5, 'x')
+    add_moving_platform(85,90,20,8,85,115,0.4, 'x')
+    add_moving_platform(175,80,20,8,175,210,0.35, 'x')
+    
+    add_fake_block(60,90,16,8)
+    add_fake_block(110,80,16,8)
+    add_fake_block(155,70,16,8)
+    
+    add_falling_spike_trigger(1, 38, 35)
+    add_falling_spike_trigger(2, 55, 60)
+    add_falling_spike_trigger(3, 90, 95)
+    add_falling_spike_trigger(4, 120, 125)
+    add_falling_spike_trigger(5, 150, 155)
+    add_falling_spike_trigger(6, 200, 205)
+    
+    add_disappearing_floor(70,120,30,16,75)
+    add_disappearing_floor(180,120,20,16,185)
+    
+    add_ground_spike(10,120,8)
+    add_ground_spike(28,120,26)
+    add_ground_spike(52,120,50)
+    add_ground_spike(75,120,73)
+    add_ground_spike(82,120,80)
+    add_ground_spike(105,120,103)
+    add_ground_spike(140,120,138)
+    add_ground_spike(155,120,153)
+    add_ground_spike(170,120,168)
+    add_ground_spike(195,120,193)
+    add_ground_spike(210,120,208)
+    
+    goal={x=220,y=25,w=10,h=15}
+
+  elseif level==7 then
+    -- NÍVEL 7 (Indiana Jones - O FIM)
+    p.x=20; p.y=88
+    
+    add_platform(0,110,70,10)
+    add_platform(90,110,60,10)
+    add_platform(170,110,60,10)
+    add_platform(250,110,70,10)
+    
+    add_platform(75,95,12,6)
+    add_platform(155,95,12,6)
+    add_platform(235,95,12,6)
+    
+    add_ground_spike(100,110,98)
+    add_ground_spike(180,110,178)
+    add_ground_spike(260,110,258)
+    add_fake_block(145,110,16,8)
+    
+    trophy = {x=35, y=95, w=8, h=8, collected=false, frame=0}
+    
+    boulder_spawn_timer = 0
+    boulder_spawn_active = false
+    
+    goal={x=235,y=75,w=10,h=15}
+  end
+  end
+
+    function add_platform(x,y,w,h)
+    table.insert(platforms,{x=x,y=y,w=w,h=h})
+    end
+
+    function add_spike(x,y,w,h)
+    table.insert(spikes,{x=x,y=y,w=w,h=h})
+    end
+
+    function add_moving_platform(x, y, w, h, lim1, lim2, spd, axis)
+    table.insert(moving_platforms, { 
+      x = x, y = y, w = w, h = h,
+      lim1 = lim1,  -- Limite inicial (Esquerda ou Topo)
+      lim2 = lim2,  -- Limite final (Direita ou Baixo)
+      spd = spd,
+      axis = axis or 'x', -- Se não informar, assume que é horizontal ('x')
+      dir = 1
+    })
+    end
+
+    function update_moving_platforms()
+    for mp in all(moving_platforms) do
       
-      -- Limites
-      if mp.x > mp.lim2 then 
-        mp.dir = -1 
-        mp.x = mp.lim2 
+      -- 1. Calcula o movimento deste frame
+      local amount = mp.spd * mp.dir
+      
+      -- Zera os valores de movimento antes de calcular
+      mp.move_x = 0
+      mp.move_y = 0
+
+      if mp.axis == 'x' then
+        -- MOVIMENTO HORIZONTAL
+        mp.x = mp.x + amount
+        mp.move_x = amount -- <--- SALVA O VALOR EXATO AQUI
+        
+        -- Limites
+        if mp.x > mp.lim2 then 
+          mp.dir = -1 
+          mp.x = mp.lim2 
+        end
+        if mp.x < mp.lim1 then 
+          mp.dir = 1 
+          mp.x = mp.lim1 
+        end
+        
+      elseif mp.axis == 'y' then
+        -- MOVIMENTO VERTICAL
+        mp.y = mp.y + amount
+        mp.move_y = amount -- <--- SALVA O VALOR EXATO AQUI
+        
+        -- Limites
+        if mp.y > mp.lim2 then 
+          mp.dir = -1 
+          mp.y = mp.lim2 
+        end 
+        if mp.y < mp.lim1 then 
+          mp.dir = 1 
+          mp.y = mp.lim1 
+        end 
       end
-      if mp.x < mp.lim1 then 
-        mp.dir = 1 
-        mp.x = mp.lim1 
-      end
-      
-    elseif mp.axis == 'y' then
-      -- MOVIMENTO VERTICAL
-      mp.y = mp.y + amount
-      mp.move_y = amount -- <--- SALVA O VALOR EXATO AQUI
-      
-      -- Limites
-      if mp.y > mp.lim2 then 
-        mp.dir = -1 
-        mp.y = mp.lim2 
-      end 
-      if mp.y < mp.lim1 then 
-        mp.dir = 1 
-        mp.y = mp.lim1 
-      end 
     end
   end
-end
 
-  function add_fake_block(x,y,w,h)
-  table.insert(fake_blocks,{ 
-    x=x,y=y,w=w,h=h,
-    active=true,timer=0
-  })
-  end
+    function add_fake_block(x,y,w,h)
+    table.insert(fake_blocks,{ 
+      x=x,y=y,w=w,h=h,
+      active=true,timer=0
+    })
+    end
 
-  function add_falling_spike_trigger(id,trigger_x,spike_x)
-  table.insert(falling_spikes,{
-    id=id,
-    trigger_x=trigger_x,
-    spike_x=spike_x,
-    y=-20,
-    w=8,h=8,
-    active=false,
-    triggered=false,
-    vy=0
-  })
-  end
+    function add_falling_spike_trigger(id,trigger_x,spike_x)
+    table.insert(falling_spikes,{
+      id=id,
+      trigger_x=trigger_x,
+      spike_x=spike_x,
+      y=-20,
+      w=8,h=8,
+      active=false,
+      triggered=false,
+      vy=0
+    })
+    end
 
-  function add_disappearing_floor(x,y,w,h,trigger_x)
-  table.insert(disappearing_floor,{
-    x=x,y=y,w=w,h=h,
-    trigger_x=trigger_x,
-    active=true,
-    triggered=false,
-    timer=0
-  })
-  end
+    function add_disappearing_floor(x,y,w,h,trigger_x)
+    table.insert(disappearing_floor,{
+      x=x,y=y,w=w,h=h,
+      trigger_x=trigger_x,
+      active=true,
+      triggered=false,
+      timer=0
+    })
+    end
 
-  function add_ground_spike(x,y,trigger_x)
-  table.insert(ground_spikes,{
-    x=x,
-    y=y,
-    base_y=y,
-    w=8,h=0,
-    max_h=12,
-    trigger_x=trigger_x,
-    triggered=false,
-    active=false,
-    state="hidden",
-    timer=0
-  })
-  end
+    function add_ground_spike(x,y,trigger_x)
+    table.insert(ground_spikes,{
+      x=x,
+      y=y,
+      base_y=y,
+      w=8,h=0,
+      max_h=12,
+      trigger_x=trigger_x,
+      triggered=false,
+      active=false,
+      state="hidden",
+      timer=0
+    })
+    end
 
-  function add_boulder(trigger_x, spawn_x, spawn_y, dir, speed)
-  table.insert(boulders,{
-    trigger_x=trigger_x,
-    x=spawn_x,
-    y=spawn_y,
-    spawn_x=spawn_x,
-    spawn_y=spawn_y,
-    w=24,h=24,
-    dir=(dir==nil) and -1 or (dir==0 and -1 or dir),
-    speed=speed or 0.9,
-    state="idle",
-    warn_timer=40,
-    vx=0,vy=0,
-    active=false
-  })
-  end 
+    function add_boulder(trigger_x, spawn_x, spawn_y, dir, speed)
+    table.insert(boulders,{
+      trigger_x=trigger_x,
+      x=spawn_x,
+      y=spawn_y,
+      spawn_x=spawn_x,
+      spawn_y=spawn_y,
+      w=24,h=24,
+      dir=(dir==nil) and -1 or (dir==0 and -1 or dir),
+      speed=speed or 0.9,
+      state="idle",
+      warn_timer=40,
+      vx=0,vy=0,
+      active=false
+    })
+    end 
 
-  function add_particle(x,y,color)
-  table.insert(particles,{
-    x=x,y=y,
-    vx=math.random(-10,10)/10,
-    vy=math.random(-20,-10)/10,
-    life=20,
-    col=color
-  })
-  end
+    function add_particle(x,y,color)
+    table.insert(particles,{
+      x=x,y=y,
+      vx=math.random(-10,10)/10,
+      vy=math.random(-20,-10)/10,
+      life=20,
+      col=color
+    })
+    end
 
-  function die()
-  if not p.dead then
-    p.dead=true
-    death_count=death_count+1
-    for i=1,10 do add_particle(p.x+4,p.y+4,8) end
-  end
-  end
+    function die()
+    if not p.dead then
+      p.dead=true
+      death_count=death_count+1
+      for i=1,10 do add_particle(p.x+4,p.y+4,8) end
+    end
+    end
 
-  function draw_trophy(x, y)
-    if trophy and not trophy.collected then
+    function draw_trophy(x, y)
+      if trophy and not trophy.collected then
+        
+        -- sombra
+        line(x+2, y+9, x+6, y+9, 0)
+
+        -- base maior
+        rect(x+1, y+6, 6, 3, 9)
+        rectb(x+1, y+6, 6, 3, 4)
+
+        -- coluna (haste do troféu)
+        rect(x+3, y+4, 2, 2, 9)
+
+        -- taça (corpo arredondado)
+        tri(x+2, y+4, x+6, y+4, x+4, y+1, 14)
+        tri(x+2, y+3, x+6, y+3, x+4, y+1, 14)
+        pix(x+3, y+2, 14)
+        pix(x+5, y+2, 14)
+
+        -- alças laterais (mais suaves)
+        pix(x+1, y+3, 9)
+        pix(x+1, y+4, 9)
+        pix(x+6, y+3, 9)
+        pix(x+6, y+4, 9)
+
+        -- borda superior (borda da taça)
+        line(x+3, y+1, x+5, y+1, 4)
+
+        -- brilho animado
+        local blink = (trophy.frame//8)%3
+        if blink == 0 then
+          pix(x+4, y+2, 15)
+        elseif blink == 1 then
+          pix(x+3, y+3, 15)
+        else
+          pix(x+5, y+3, 15)
+        end
+
+        -- partículas douradas
+        if math.random(1,6)==1 then
+          add_particle(x + math.random(0,7), y + math.random(0,7), 14)
+        end
+      end
+    end
+
+
+    function TIC()
+    if p.dead then
+      cls(2)
       
-      -- sombra
-      line(x+2, y+9, x+6, y+9, 0)
-
-      -- base maior
-      rect(x+1, y+6, 6, 3, 9)
-      rectb(x+1, y+6, 6, 3, 4)
-
-      -- coluna (haste do troféu)
-      rect(x+3, y+4, 2, 2, 9)
-
-      -- taça (corpo arredondado)
-      tri(x+2, y+4, x+6, y+4, x+4, y+1, 14)
-      tri(x+2, y+3, x+6, y+3, x+4, y+1, 14)
-      pix(x+3, y+2, 14)
-      pix(x+5, y+2, 14)
-
-      -- alças laterais (mais suaves)
-      pix(x+1, y+3, 9)
-      pix(x+1, y+4, 9)
-      pix(x+6, y+3, 9)
-      pix(x+6, y+4, 9)
-
-      -- borda superior (borda da taça)
-      line(x+3, y+1, x+5, y+1, 4)
-
-      -- brilho animado
-      local blink = (trophy.frame//8)%3
-      if blink == 0 then
-        pix(x+4, y+2, 15)
-      elseif blink == 1 then
-        pix(x+3, y+3, 15)
+      print("VOCÊ MORREU!",75,60,15)
+      print("Mortes: "..death_count,85,72,14)
+      print("Pressione Z para tentar novamente",35,80,15)
+      if btnp(4) then init_level() end
+      
+      update_particles()
+      draw_particles()
+      
+      return
+    end
+    
+    if p.win then
+      cls(5)
+      print("NÍVEL COMPLETO!",65,60,11)
+      print("Mortes: "..death_count,90,72,14)
+      if level<7 then
+      print("Pressione Z para o próximo nível",35,80,15)
       else
-        pix(x+5, y+3, 15)
+      print("VOCÊ VENCEU O JOGO!",60,80,14)
+      if trophy and trophy.collected then
+        print("Você recuperou o troféu! 🏆",48,92,14)
       end
-
-      -- partículas douradas
-      if math.random(1,6)==1 then
-        add_particle(x + math.random(0,7), y + math.random(0,7), 14)
+      print("Pressione Z para recomeçar",45,100,15)
+      end
+      if btnp(4) then
+      level=level+1
+      if level>7 then level=1 end
+      init_level()
+      end
+      return
+    end
+    
+    -- Input
+    if btn(2) then 
+      p.vx=-0.6
+      p.dir=-1
+    end
+    if p.grace > 0 then 
+      p.grace = p.grace - 1 
+    end
+    if btn(3) then 
+      p.vx=0.6
+      p.dir=1
+    end
+    if not(btn(2) or btn(3)) then p.vx=0 end
+    
+    -- Animação
+    if p.vx~=0 then
+      p.frame=p.frame+0.15
+    else
+      p.frame=0
+    end
+    
+    -- Jump
+    if btnp(4) and p.grace > 0 then -- Verifica a tolerância em vez de "grounded"
+      p.vy=-3.8
+      p.grounded=false
+      p.grace=0 -- Gasta a tolerância imediatamente
+      for i=1,3 do
+      add_particle(p.x+4,p.y+8,15)
       end
     end
+    
+    -- Gravity
+    p.vy=p.vy+0.15
+    if p.vy>3 then p.vy=3 end
+    
+    -- Update position
+    p.x=p.x+p.vx
+    p.y=p.y+p.vy
+    update_moving_platforms()
+    -- Partículas ao andar
+    if p.grounded and p.vx~=0 and math.random(1,5)==1 then
+      add_particle(p.x+4,p.y+8,13)
+    end
+    
+
+    
+    -- Update fake blocks
+    for fb in all(fake_blocks) do
+      if fb.timer>0 then
+      fb.timer=fb.timer-1
+      if fb.timer==0 then
+        fb.active=false
+        for i=1,5 do
+        add_particle(fb.x+fb.w/2,fb.y+fb.h/2,8)
+        end
+      end
+      end
+    end
+    
+    -- Update disappearing floor
+    for df in all(disappearing_floor) do
+      if not df.triggered and p.x>df.trigger_x then
+      df.triggered=true
+      df.timer=60
+      end
+      
+      if df.timer>0 then
+      df.timer=df.timer-1
+      if df.timer==0 then
+        df.active=false
+        for i=1,8 do
+        add_particle(df.x+df.w/2,df.y,8)
+        end
+      end
+      end
+    end
+    
+    -- Update falling spikes
+    for fs in all(falling_spikes) do
+      -- Verifica se o player passou do gatilho
+      if not fs.triggered and p.x>fs.trigger_x then
+      fs.triggered=true
+      fs.active=true
+      fs.y=-20
+      fs.vy=0
+      end
+      
+      -- Movimento de queda
+      if fs.active then
+      fs.vy=fs.vy+0.3
+      fs.y=fs.y+fs.vy
+      
+      -- MUDANÇA AQUI: Removemos o limite de 112.
+      -- O espinho agora cai até sair da tela (240) e some.
+      if fs.y > 240 then
+        fs.active = false
+      end
+      end
+    end
+    
+    -- Update e collision com troféu (INDIANA JONES!)
+    if trophy then
+      trophy.frame = trophy.frame + 1
+      
+      if not trophy.collected and collide(p, trophy) then
+      trophy.collected = true
+      boulder_spawn_active = true
+      boulder_spawn_timer = -60  -- Delay inicial de 2 segundos!
+      
+      -- Explosão de partículas douradas!
+      for i=1,20 do 
+        add_particle(trophy.x+4, trophy.y+4, 14) 
+      end
+      
+      -- Partículas de aviso vermelho no ponto de spawn
+      for i=1,15 do
+        add_particle(15, 50, 8)
+      end
+      end
+    end
+    
+    -- Sistema de spawn contínuo de pedras (fase 6)
+    if level==7 and boulder_spawn_active then
+      boulder_spawn_timer = boulder_spawn_timer + 1
+      
+      -- Spawnar nova pedra a cada 90 frames (3 segundos)
+      if boulder_spawn_timer >= 90 then
+      boulder_spawn_timer = 0
+      
+      -- Adicionar nova pedra SEMPRE do mesmo lugar (x=15, y=40)
+      add_boulder(-999, 15, 40, 1, 1.3 + math.random(0,2)/10)
+      
+      -- Ativar a pedra recém-criada
+      for i = #boulders, 1, -1 do
+        local b = boulders[i]
+        if b.state == "idle" and b.trigger_x == -999 then
+        b.state = "rolling"
+        b.active = true
+        b.vx = 1.3 + math.random(0,2)/10
+        b.vy = 0
+        
+        -- Efeito visual de spawn
+        for j=1,10 do
+          add_particle(b.x + math.random(0,24), b.y + math.random(0,24), 15)
+        end
+        break
+        end
+      end
+      end
+    end
+    
+    -- Update boulders
+    for b in all(boulders) do
+      if b.state=="idle" then
+      if b.trigger_x ~= -999 and p.x> b.trigger_x then
+        b.state="warned"
+        b.warn_timer=40
+        for i=1,6 do add_particle(b.spawn_x,20,15) end
+      end
+
+      elseif b.state=="warned" then
+      b.warn_timer=b.warn_timer-1
+      if b.warn_timer<=0 then
+        b.state="rolling"
+        b.active=true
+        b.vx = (b.dir and (b.dir>0 and 1 or -1) or -1) * (b.speed or 0.9)
+        b.vy = 0
+      end
+
+      elseif b.state=="rolling" then
+      b.vy = b.vy + 0.25
+      b.x = b.x + b.vx
+      b.y = b.y + b.vy
+      
+      -- Partículas de poeira enquanto rola!
+      if math.random(1,3)==1 then
+        add_particle(b.x + b.w/2, b.y + b.h - 4, 4)
+        add_particle(b.x+math.random(0,b.w), b.y + b.h - 6, 13)
+      end
+
+      for plat in all(platforms) do
+        if b.vy>=0 and
+          b.x + b.w > plat.x and b.x < plat.x + plat.w and
+          b.y + b.h >= plat.y and b.y + b.h <= plat.y + 6 then
+        b.y = plat.y - b.h
+        b.vy = 0
+        b.vx = b.vx * 1.01
+        end
+      end
+
+      if b.y > 160 then
+        b.state="done"
+        b.active=false
+      end
+      end
+
+      if b.active and collide(p, {x=b.x,y=b.y,w=b.w,h=b.h}) then
+      die()
+      end
+    end
+    
+    -- Update ground spikes
+    for gs in all(ground_spikes) do
+      if not gs.triggered and p.x>gs.trigger_x then
+      gs.triggered=true
+      gs.state="rising"
+      gs.timer=0
+      for i=1,3 do
+        add_particle(gs.x+4,gs.base_y,15)
+      end
+      end
+      
+      if gs.state=="rising" then
+      gs.h=gs.h+2
+      if gs.h>=gs.max_h then
+        gs.h=gs.max_h
+        gs.state="active"
+        gs.timer=90
+        gs.active=true
+        for i=1,5 do
+        add_particle(gs.x+4,gs.y,8)
+        end
+      end
+      gs.y=gs.base_y-gs.h
+      elseif gs.state=="active" then
+      gs.timer=gs.timer-1
+      if gs.timer<=0 then
+        gs.state="lowering"
+      end
+      elseif gs.state=="lowering" then
+      gs.h=gs.h-0.5
+      if gs.h<=0 then
+        gs.h=0
+        gs.state="hidden"
+        gs.active=false
+        gs.triggered=false
+      end
+      gs.y=gs.base_y-gs.h
+      end
+    end
+    
+    -- Collision with platforms
+    p.grounded=false
+    
+    for plat in all(platforms) do
+      if check_platform_collision(plat) then
+        p.grace = 6 -- Dá 6 frames (0.1s) de chance para pular mesmo caindo
+      end
+    end
+    
+    for mp in all(moving_platforms) do
+    
+    local margem = 12 
+    
+    if p.vy >= 0 and
+      p.x + p.w > mp.x and 
+      p.x < mp.x + mp.w and
+      p.y + p.h >= mp.y and 
+      p.y + p.h <= mp.y + margem then
+      
+      -- 1. Gruda o player na altura correta (Vertical)
+      p.y = mp.y - p.h
+      p.vy = 0
+      p.grounded = true
+      p.grace = 6
+      
+      -- 2. Empurra o player EXATAMENTE o que a plataforma andou
+      p.x = p.x + mp.move_x 
+      
+      -- Nota: Não precisamos somar mp.move_y, pois a linha
+      -- "p.y = mp.y - p.h" já faz o boneco acompanhar a subida/descida.
+    end
   end
-
-
-  function TIC()
-  if p.dead then
-    cls(2)
     
-    print("VOCÊ MORREU!",75,60,15)
-    print("Mortes: "..death_count,85,72,14)
-    print("Pressione Z para tentar novamente",35,80,15)
-    if btnp(4) then init_level() end
+    for fb in all(fake_blocks) do
+      if fb.active then
+      if check_platform_collision(fb) then
+        fb.timer=30
+        p.grace=6
+      end
+      end
+    end
     
+    for df in all(disappearing_floor) do
+      if df.active then
+      if check_platform_collision(df) then
+      p.grace=6    
+    end
+      end
+    end
+    
+    -- Collision with spikes
+    for spike in all(spikes) do
+      if collide(p,spike) then
+      die()
+      end
+    end
+    
+    -- Collision with falling spikes
+    for fs in all(falling_spikes) do
+      if fs.active and collide(p,{x=fs.spike_x,y=fs.y,w=fs.w,h=fs.h}) then
+      die()
+      end
+    end
+    
+    -- Collision with ground spikes
+    for gs in all(ground_spikes) do
+      if gs.active and collide(p,gs) then
+      die()
+      end
+    end
+    
+    -- Collision with goal
+    if collide(p,goal) then
+      p.win=true
+    end
+    
+    -- Fall death
+    if p.y>136 then die() end
+    
+    -- Camera (ajustada para fase 6)
+    if level==6 then
+      cam.x=cam.x+(mid(0,p.x-80,0)-cam.x)*0.15
+    else
+      cam.x=cam.x+(mid(0,p.x-120,0)-cam.x)*0.1
+    end
+    cam.y=cam.y+(mid(0,p.y-68,0)-cam.y)*0.1
+    
+    -- Update particles
     update_particles()
+    
+    -- Draw
+    draw_background()
+    
+    -- Draw platforms
+    for plat in all(platforms) do
+      draw_platform(plat.x-cam.x,plat.y-cam.y,plat.w,plat.h,4,5)
+    end
+    
+    -- Draw moving platforms
+    for mp in all(moving_platforms) do
+      draw_platform(mp.x-cam.x,mp.y-cam.y,mp.w,mp.h,9,10)
+    end
+    
+    -- Draw fake blocks
+    for fb in all(fake_blocks) do
+      if fb.active then
+      local col1=4
+      local col2=5
+      if fb.timer>0 then 
+        col1=8
+        col2=2
+      end
+      draw_platform(fb.x-cam.x,fb.y-cam.y,fb.w,fb.h,col1,col2)
+      end
+    end
+    
+    -- Draw disappearing floor
+    for df in all(disappearing_floor) do
+      if df.active then
+      local col1=4
+      local col2=5
+      if df.timer>0 and df.timer<30 then
+        if df.timer%10<5 then
+        col1=8
+        col2=2
+        end
+      end
+      draw_platform(df.x-cam.x,df.y-cam.y,df.w,df.h,col1,col2)
+      end
+    end
+    
+    -- Draw spikes
+    for spike in all(spikes) do
+      draw_spike(spike.x-cam.x,spike.y-cam.y,spike.w,spike.h)
+    end
+    
+    -- Compatibilidade: circfill / circ
+    if type(circfill) ~= "function" then
+      function circfill(cx, cy, r, col)
+        local rr = r * r
+        for dy = -r, r do
+          for dx = -r, r do
+            if dx * dx + dy * dy <= rr then
+              pix(cx + dx, cy + dy, col)
+            end
+          end
+        end
+      end
+    end
+
+    if type(circ) ~= "function" then
+      function circ(cx, cy, r, col)
+        local rr = r * r
+        local thickness = math.max(1, math.floor(r * 0.25))
+        local low = (r - thickness) * (r - thickness)
+        local high = rr
+        for dy = -r, r do
+          for dx = -r, r do
+            local d2 = dx * dx + dy * dy
+            if d2 >= low and d2 <= high then
+              pix(cx + dx, cy + dy, col)
+            end
+          end
+        end
+      end
+    end
+
+    -- Draw falling spikes
+    for fs in all(falling_spikes) do
+      if fs.active then
+      draw_spike(fs.spike_x-cam.x,fs.y-cam.y,fs.w,fs.h)
+      if fs.y<0 then
+        print("!",fs.spike_x-cam.x+2,110-cam.y,8)
+      end
+      end
+    end
+    
+    -- Draw ground spikes
+    for gs in all(ground_spikes) do
+      if gs.h>0 then
+      draw_ground_spike(gs.x-cam.x,gs.y-cam.y,gs.w,gs.h,gs.state)
+      end
+    end
+
+    -- Draw boulders
+    for b in all(boulders) do
+      local bx = b.x - cam.x
+      local by = b.y - cam.y
+      if b.state=="warned" then
+      if (b.warn_timer % 10) < 6 then
+        print("!!", math.floor(b.spawn_x - cam.x + 4), 35, 8)
+      end
+      rectb(b.spawn_x-cam.x, b.spawn_y-cam.y, b.w, b.h, 0)
+      elseif b.state=="rolling" or b.state=="done" then
+      local rr = math.floor(b.w/2)
+      -- shadow
+      circfill(bx+rr, by+rr+4, rr, 0)
+      -- stone body
+      circfill(bx+rr, by+rr, rr, 8)
+      -- highlight
+      circ(bx+rr, by+rr, rr, 2)
+      -- textura extra
+      circ(bx+rr, by+rr, math.floor(rr*0.6), 15)
+      end
+    end
+
+    -- Draw particles
     draw_particles()
     
-    return
-  end
-  
-  if p.win then
-    cls(5)
-    print("NÍVEL COMPLETO!",65,60,11)
-    print("Mortes: "..death_count,90,72,14)
-    if level<7 then
-    print("Pressione Z para o próximo nível",35,80,15)
-    else
-    print("VOCÊ VENCEU O JOGO!",60,80,14)
-    if trophy and trophy.collected then
-      print("Você recuperou o troféu! 🏆",48,92,14)
-    end
-    print("Pressione Z para recomeçar",45,100,15)
-    end
-    if btnp(4) then
-    level=level+1
-    if level>7 then level=1 end
-    init_level()
-    end
-    return
-  end
-  
-  -- Input
-  if btn(2) then 
-    p.vx=-0.6
-    p.dir=-1
-  end
-  if p.grace > 0 then 
-    p.grace = p.grace - 1 
-  end
-  if btn(3) then 
-    p.vx=0.6
-    p.dir=1
-  end
-  if not(btn(2) or btn(3)) then p.vx=0 end
-  
-  -- Animação
-  if p.vx~=0 then
-    p.frame=p.frame+0.15
-  else
-    p.frame=0
-  end
-  
-  -- Jump
-  if btnp(4) and p.grace > 0 then -- Verifica a tolerância em vez de "grounded"
-    p.vy=-3.8
-    p.grounded=false
-    p.grace=0 -- Gasta a tolerância imediatamente
-    for i=1,3 do
-    add_particle(p.x+4,p.y+8,15)
-    end
-  end
-  
-  -- Gravity
-  p.vy=p.vy+0.15
-  if p.vy>3 then p.vy=3 end
-  
-  -- Update position
-  p.x=p.x+p.vx
-  p.y=p.y+p.vy
-  update_moving_platforms()
-  -- Partículas ao andar
-  if p.grounded and p.vx~=0 and math.random(1,5)==1 then
-    add_particle(p.x+4,p.y+8,13)
-  end
-  
-
-  
-  -- Update fake blocks
-  for fb in all(fake_blocks) do
-    if fb.timer>0 then
-    fb.timer=fb.timer-1
-    if fb.timer==0 then
-      fb.active=false
-      for i=1,5 do
-      add_particle(fb.x+fb.w/2,fb.y+fb.h/2,8)
-      end
-    end
-    end
-  end
-  
-  -- Update disappearing floor
-  for df in all(disappearing_floor) do
-    if not df.triggered and p.x>df.trigger_x then
-    df.triggered=true
-    df.timer=60
+    -- Draw troféu dourado
+    if trophy and not trophy.collected then
+      draw_trophy(trophy.x-cam.x, trophy.y-cam.y)
     end
     
-    if df.timer>0 then
-    df.timer=df.timer-1
-    if df.timer==0 then
-      df.active=false
-      for i=1,8 do
-      add_particle(df.x+df.w/2,df.y,8)
-      end
+    -- Draw goal
+    draw_goal(goal.x-cam.x,goal.y-cam.y,goal.w,goal.h)
+    
+    -- Draw player
+    draw_player(p.x-cam.x,p.y-cam.y)
+    
+    -- UI
+    print("Nível "..level.."/7",3,3,0)
+    print("Nível "..level.."/7",2,2,15)
+    print("Mortes: "..death_count,3,12,8)
+    print("Setas: Mover  Z: Pular",3,131,0) 
+    print("Setas: Mover  Z: Pular",2,130,15)
+    end
+
+    function draw_background()
+    for i=0,136 do
+      local c=12+math.floor(i/40)
+      if c>15 then c=15 end
+      line(0,i,240,i,c)
     end
     end
-  end
-  
-  -- Update falling spikes
-  for fs in all(falling_spikes) do
-    -- Verifica se o player passou do gatilho
-    if not fs.triggered and p.x>fs.trigger_x then
-    fs.triggered=true
-    fs.active=true
-    fs.y=-20
-    fs.vy=0
+
+    function draw_platform(x,y,w,h,col1,col2)
+    rectb(x,y,w,h,0)
+    rect(x+1,y+1,w-2,h-2,col1)
+    
+    for i=0,w,4 do
+      pix(x+i,y+2,col2)
+      pix(x+i+2,y+h-3,col2)
     end
     
-    -- Movimento de queda
-    if fs.active then
-    fs.vy=fs.vy+0.3
-    fs.y=fs.y+fs.vy
-    
-    -- MUDANÇA AQUI: Removemos o limite de 112.
-    -- O espinho agora cai até sair da tela (240) e some.
-    if fs.y > 240 then
-      fs.active = false
-    end
-    end
-  end
-  
-  -- Update e collision com troféu (INDIANA JONES!)
-  if trophy then
-    trophy.frame = trophy.frame + 1
-    
-    if not trophy.collected and collide(p, trophy) then
-    trophy.collected = true
-    boulder_spawn_active = true
-    boulder_spawn_timer = -60  -- Delay inicial de 2 segundos!
-    
-    -- Explosão de partículas douradas!
-    for i=1,20 do 
-      add_particle(trophy.x+4, trophy.y+4, 14) 
-    end
-    
-    -- Partículas de aviso vermelho no ponto de spawn
-    for i=1,15 do
-      add_particle(15, 50, 8)
-    end
-    end
-  end
-  
-  -- Sistema de spawn contínuo de pedras (fase 6)
-  if level==7 and boulder_spawn_active then
-    boulder_spawn_timer = boulder_spawn_timer + 1
-    
-    -- Spawnar nova pedra a cada 90 frames (3 segundos)
-    if boulder_spawn_timer >= 90 then
-    boulder_spawn_timer = 0
-    
-    -- Adicionar nova pedra SEMPRE do mesmo lugar (x=15, y=40)
-    add_boulder(-999, 15, 40, 1, 1.3 + math.random(0,2)/10)
-    
-    -- Ativar a pedra recém-criada
-    for i = #boulders, 1, -1 do
-      local b = boulders[i]
-      if b.state == "idle" and b.trigger_x == -999 then
-      b.state = "rolling"
-      b.active = true
-      b.vx = 1.3 + math.random(0,2)/10
-      b.vy = 0
-      
-      -- Efeito visual de spawn
-      for j=1,10 do
-        add_particle(b.x + math.random(0,24), b.y + math.random(0,24), 15)
-      end
-      break
-      end
-    end
-    end
-  end
-  
-  -- Update boulders
-  for b in all(boulders) do
-    if b.state=="idle" then
-    if b.trigger_x ~= -999 and p.x> b.trigger_x then
-      b.state="warned"
-      b.warn_timer=40
-      for i=1,6 do add_particle(b.spawn_x,20,15) end
+    line(x+1,y+1,x+w-2,y+1,col2)
     end
 
-    elseif b.state=="warned" then
-    b.warn_timer=b.warn_timer-1
-    if b.warn_timer<=0 then
-      b.state="rolling"
-      b.active=true
-      b.vx = (b.dir and (b.dir>0 and 1 or -1) or -1) * (b.speed or 0.9)
-      b.vy = 0
-    end
-
-    elseif b.state=="rolling" then
-    b.vy = b.vy + 0.25
-    b.x = b.x + b.vx
-    b.y = b.y + b.vy
-    
-    -- Partículas de poeira enquanto rola!
-    if math.random(1,3)==1 then
-      add_particle(b.x + b.w/2, b.y + b.h - 4, 4)
-      add_particle(b.x+math.random(0,b.w), b.y + b.h - 6, 13)
-    end
-
-    for plat in all(platforms) do
-      if b.vy>=0 and
-        b.x + b.w > plat.x and b.x < plat.x + plat.w and
-        b.y + b.h >= plat.y and b.y + b.h <= plat.y + 6 then
-      b.y = plat.y - b.h
-      b.vy = 0
-      b.vx = b.vx * 1.01
-      end
-    end
-
-    if b.y > 160 then
-      b.state="done"
-      b.active=false
-    end
-    end
-
-    if b.active and collide(p, {x=b.x,y=b.y,w=b.w,h=b.h}) then
-    die()
-    end
-  end
-  
-  -- Update ground spikes
-  for gs in all(ground_spikes) do
-    if not gs.triggered and p.x>gs.trigger_x then
-    gs.triggered=true
-    gs.state="rising"
-    gs.timer=0
-    for i=1,3 do
-      add_particle(gs.x+4,gs.base_y,15)
-    end
-    end
-    
-    if gs.state=="rising" then
-    gs.h=gs.h+2
-    if gs.h>=gs.max_h then
-      gs.h=gs.max_h
-      gs.state="active"
-      gs.timer=90
-      gs.active=true
-      for i=1,5 do
-      add_particle(gs.x+4,gs.y,8)
-      end
-    end
-    gs.y=gs.base_y-gs.h
-    elseif gs.state=="active" then
-    gs.timer=gs.timer-1
-    if gs.timer<=0 then
-      gs.state="lowering"
-    end
-    elseif gs.state=="lowering" then
-    gs.h=gs.h-0.5
-    if gs.h<=0 then
-      gs.h=0
-      gs.state="hidden"
-      gs.active=false
-      gs.triggered=false
-    end
-    gs.y=gs.base_y-gs.h
-    end
-  end
-  
-  -- Collision with platforms
-  p.grounded=false
-  
-  for plat in all(platforms) do
-    if check_platform_collision(plat) then
-      p.grace = 6 -- Dá 6 frames (0.1s) de chance para pular mesmo caindo
-    end
-  end
-  
-  for mp in all(moving_platforms) do
-  
-  local margem = 12 
-  
-  if p.vy >= 0 and
-     p.x + p.w > mp.x and 
-     p.x < mp.x + mp.w and
-     p.y + p.h >= mp.y and 
-     p.y + p.h <= mp.y + margem then
-     
-     -- 1. Gruda o player na altura correta (Vertical)
-     p.y = mp.y - p.h
-     p.vy = 0
-     p.grounded = true
-     p.grace = 6
-     
-     -- 2. Empurra o player EXATAMENTE o que a plataforma andou
-     p.x = p.x + mp.move_x 
-     
-     -- Nota: Não precisamos somar mp.move_y, pois a linha
-     -- "p.y = mp.y - p.h" já faz o boneco acompanhar a subida/descida.
-  end
- end
-  
-  for fb in all(fake_blocks) do
-    if fb.active then
-    if check_platform_collision(fb) then
-      fb.timer=30
-      p.grace=6
-    end
-    end
-  end
-  
-  for df in all(disappearing_floor) do
-    if df.active then
-    if check_platform_collision(df) then
-     p.grace=6    
-   end
-    end
-  end
-  
-  -- Collision with spikes
-  for spike in all(spikes) do
-    if collide(p,spike) then
-    die()
-    end
-  end
-  
-  -- Collision with falling spikes
-  for fs in all(falling_spikes) do
-    if fs.active and collide(p,{x=fs.spike_x,y=fs.y,w=fs.w,h=fs.h}) then
-    die()
-    end
-  end
-  
-  -- Collision with ground spikes
-  for gs in all(ground_spikes) do
-    if gs.active and collide(p,gs) then
-    die()
-    end
-  end
-  
-  -- Collision with goal
-  if collide(p,goal) then
-    p.win=true
-  end
-  
-  -- Fall death
-  if p.y>136 then die() end
-  
-  -- Camera (ajustada para fase 6)
-  if level==6 then
-    cam.x=cam.x+(mid(0,p.x-80,0)-cam.x)*0.15
-  else
-    cam.x=cam.x+(mid(0,p.x-120,0)-cam.x)*0.1
-  end
-  cam.y=cam.y+(mid(0,p.y-68,0)-cam.y)*0.1
-  
-  -- Update particles
-  update_particles()
-  
-  -- Draw
-  draw_background()
-  
-  -- Draw platforms
-  for plat in all(platforms) do
-    draw_platform(plat.x-cam.x,plat.y-cam.y,plat.w,plat.h,4,5)
-  end
-  
-  -- Draw moving platforms
-  for mp in all(moving_platforms) do
-    draw_platform(mp.x-cam.x,mp.y-cam.y,mp.w,mp.h,9,10)
-  end
-  
-  -- Draw fake blocks
-  for fb in all(fake_blocks) do
-    if fb.active then
-    local col1=4
-    local col2=5
-    if fb.timer>0 then 
-      col1=8
-      col2=2
-    end
-    draw_platform(fb.x-cam.x,fb.y-cam.y,fb.w,fb.h,col1,col2)
-    end
-  end
-  
-  -- Draw disappearing floor
-  for df in all(disappearing_floor) do
-    if df.active then
-    local col1=4
-    local col2=5
-    if df.timer>0 and df.timer<30 then
-      if df.timer%10<5 then
-      col1=8
-      col2=2
-      end
-    end
-    draw_platform(df.x-cam.x,df.y-cam.y,df.w,df.h,col1,col2)
-    end
-  end
-  
-  -- Draw spikes
-  for spike in all(spikes) do
-    draw_spike(spike.x-cam.x,spike.y-cam.y,spike.w,spike.h)
-  end
-  
-  -- Compatibilidade: circfill / circ
-  if type(circfill) ~= "function" then
-    function circfill(cx, cy, r, col)
-      local rr = r * r
-      for dy = -r, r do
-        for dx = -r, r do
-          if dx * dx + dy * dy <= rr then
-            pix(cx + dx, cy + dy, col)
-          end
-        end
-      end
-    end
-  end
-
-  if type(circ) ~= "function" then
-    function circ(cx, cy, r, col)
-      local rr = r * r
-      local thickness = math.max(1, math.floor(r * 0.25))
-      local low = (r - thickness) * (r - thickness)
-      local high = rr
-      for dy = -r, r do
-        for dx = -r, r do
-          local d2 = dx * dx + dy * dy
-          if d2 >= low and d2 <= high then
-            pix(cx + dx, cy + dy, col)
-          end
-        end
-      end
-    end
-  end
-
-  -- Draw falling spikes
-  for fs in all(falling_spikes) do
-    if fs.active then
-    draw_spike(fs.spike_x-cam.x,fs.y-cam.y,fs.w,fs.h)
-    if fs.y<0 then
-      print("!",fs.spike_x-cam.x+2,110-cam.y,8)
-    end
-    end
-  end
-  
-  -- Draw ground spikes
-  for gs in all(ground_spikes) do
-    if gs.h>0 then
-    draw_ground_spike(gs.x-cam.x,gs.y-cam.y,gs.w,gs.h,gs.state)
-    end
-  end
-
-  -- Draw boulders
-  for b in all(boulders) do
-    local bx = b.x - cam.x
-    local by = b.y - cam.y
-    if b.state=="warned" then
-    if (b.warn_timer % 10) < 6 then
-      print("!!", math.floor(b.spawn_x - cam.x + 4), 35, 8)
-    end
-    rectb(b.spawn_x-cam.x, b.spawn_y-cam.y, b.w, b.h, 0)
-    elseif b.state=="rolling" or b.state=="done" then
-    local rr = math.floor(b.w/2)
-    -- shadow
-    circfill(bx+rr, by+rr+4, rr, 0)
-    -- stone body
-    circfill(bx+rr, by+rr, rr, 8)
-    -- highlight
-    circ(bx+rr, by+rr, rr, 2)
-    -- textura extra
-    circ(bx+rr, by+rr, math.floor(rr*0.6), 15)
-    end
-  end
-
-  -- Draw particles
-  draw_particles()
-  
-  -- Draw troféu dourado
-  if trophy and not trophy.collected then
-    draw_trophy(trophy.x-cam.x, trophy.y-cam.y)
-  end
-  
-  -- Draw goal
-  draw_goal(goal.x-cam.x,goal.y-cam.y,goal.w,goal.h)
-  
-  -- Draw player
-  draw_player(p.x-cam.x,p.y-cam.y)
-  
-  -- UI
-  print("Nível "..level.."/7",3,3,0)
-  print("Nível "..level.."/7",2,2,15)
-  print("Mortes: "..death_count,3,12,8)
-  print("Setas: Mover  Z: Pular",3,131,0) 
-  print("Setas: Mover  Z: Pular",2,130,15)
-  end
-
-  function draw_background()
-  for i=0,136 do
-    local c=12+math.floor(i/40)
-    if c>15 then c=15 end
-    line(0,i,240,i,c)
-  end
-  end
-
-  function draw_platform(x,y,w,h,col1,col2)
-  rectb(x,y,w,h,0)
-  rect(x+1,y+1,w-2,h-2,col1)
-  
-  for i=0,w,4 do
-    pix(x+i,y+2,col2)
-    pix(x+i+2,y+h-3,col2)
-  end
-  
-  line(x+1,y+1,x+w-2,y+1,col2)
-  end
-
-  function draw_spike(x,y,w,h)
-  tri(x+1,y+h+1,x+w/2+1,y+1,x+w+1,y+h+1,0)
-  tri(x,y+h,x+w/2,y,x+w,y+h,8)
-  line(x+w/2,y,x,y+h,2)
-  end
-
-  function draw_ground_spike(x,y,w,h,state)
-  if h>0 then
-    rect(x,y+h-2,w,2,0)
-    rect(x+1,y+h-1,w-2,1,2)
-    
+    function draw_spike(x,y,w,h)
+    tri(x+1,y+h+1,x+w/2+1,y+1,x+w+1,y+h+1,0)
     tri(x,y+h,x+w/2,y,x+w,y+h,8)
-    
     line(x+w/2,y,x,y+h,2)
-    
-    if state=="rising" then
-    line(x+1,y+h,x+w-1,y+h,15)
-    if math.random(1,3)==1 then
-      add_particle(x+math.random(0,w),y+h,15)
+    end
+
+    function draw_ground_spike(x,y,w,h,state)
+    if h>0 then
+      rect(x,y+h-2,w,2,0)
+      rect(x+1,y+h-1,w-2,1,2)
+      
+      tri(x,y+h,x+w/2,y,x+w,y+h,8)
+      
+      line(x+w/2,y,x,y+h,2)
+      
+      if state=="rising" then
+      line(x+1,y+h,x+w-1,y+h,15)
+      if math.random(1,3)==1 then
+        add_particle(x+math.random(0,w),y+h,15)
+      end
+      end
+      
+      if state=="active" and math.random(1,10)==1 then
+      line(x+w/2,y,x+w/2,y+h,15)
+      end
     end
     end
-    
-    if state=="active" and math.random(1,10)==1 then
-    line(x+w/2,y,x+w/2,y+h,15)
+
+    function draw_goal(x,y,w,h)
+    rect(x,y,w,h,3)
+    rect(x+1,y+1,w-2,h-2,11)
+    rectb(x,y,w,h,0)
+    rect(x+w-3,y+h/2,2,2,14)
+    print("!",x+3,y+4,15)
     end
+
+    function draw_player(x,y)
+  local anim = math.floor(p.frame)%2
+  
+  -- Ajuste fino da posição Y para o boneco não "entrar" no chão
+  -- (Porque ele é um pouco mais alto que o anterior)
+  local draw_y = y - 4
+
+  -- === CAMADA 1: CABEÇA ===
+  
+  -- Chapéu Vermelho (Topo)
+  rect(x+2, draw_y, 5, 2, 2)
+  -- Aba do chapéu (depende da direção)
+  if p.dir == 1 then
+      rect(x+4, draw_y+1, 4, 1, 2)
+  else
+      rect(x, draw_y+1, 4, 1, 2)
   end
+  
+  -- Rosto (Cor de pele - 15)
+  rect(x+2, draw_y+2, 5, 3, 15)
+  
+  -- Cabelo/Nuca (Marrom - 4)
+  if p.dir == 1 then rect(x+1, draw_y+2, 1, 3, 4) 
+  else rect(x+7, draw_y+2, 1, 3, 4) end
+  
+  -- Nariz e Bigode (O charme do Mario!)
+  if p.dir == 1 then
+      pix(x+7, draw_y+3, 15) -- Nariz para direita
+      line(x+5, draw_y+4, x+7, draw_y+4, 0) -- Bigode preto
+      pix(x+5, draw_y+2, 0) -- Olho
+  else
+      pix(x+1, draw_y+3, 15) -- Nariz para esquerda
+      line(x+1, draw_y+4, x+3, draw_y+4, 0) -- Bigode preto
+      pix(x+3, draw_y+2, 0) -- Olho
   end
 
-  function draw_goal(x,y,w,h)
-  rect(x,y,w,h,3)
-  rect(x+1,y+1,w-2,h-2,11)
-  rectb(x,y,w,h,0)
-  rect(x+w-3,y+h/2,2,2,14)
-  print("!",x+3,y+4,15)
-  end
+  -- === CAMADA 2: CORPO ===
+  
+  -- Camisa Vermelha (Mangas por trás do macacão)
+  rect(x, draw_y+5, 9, 3, 2)
+  -- Mãos (Pele nas pontas das mangas)
+  if p.dir == 1 then pix(x+8, draw_y+7, 15) 
+  else pix(x, draw_y+7, 15) end
 
-  function draw_player(x,y)
-  local anim=math.floor(p.frame)%2
-  
-  line(x+1,y+8,x+6,y+8,0)
-  
-  rect(x+2,y+4,4,4,6)
-  rectb(x+2,y+4,4,4,8)
-  
-  rect(x+1,y,6,4,14)
-  rectb(x+1,y,6,4,4)
-  
-  rect(x+2,y,4,1,4)
-  
-  if p.dir==1 then
-    rect(x+3,y+1,1,2,15)
-    rect(x+5,y+1,1,2,15)
-    pix(x+3,y+2,0)
-    pix(x+5,y+2,0)
-  else
-    rect(x+2,y+1,1,2,15)
-    rect(x+4,y+1,1,2,15)
-    pix(x+2,y+2,0)
-    pix(x+4,y+2,0)
-  end
-  
-  pix(x+3,y+3,2)
-  
-  if anim==0 then
-    rect(x+2,y+7,2,1,4)
-    rect(x+4,y+7,2,1,4)
-  else
-    rect(x+1,y+7,2,1,4)
-    rect(x+5,y+7,2,1,4)
-  end
-  
+  -- Macacão Azul (Corpo principal)
+  rect(x+2, draw_y+6, 5, 4, 8)
+  -- Alças do macacão
+  pix(x+2, draw_y+5, 8)
+  pix(x+6, draw_y+5, 8)
+  -- Botões Amarelos do macacão
+  pix(x+2, draw_y+7, 10)
+  pix(x+6, draw_y+7, 10)
+
+  -- === CAMADA 3: PERNAS E PÉS (Animação) ===
+  -- Sapatos Marrons (4)
+
   if not p.grounded then
-    rect(x,y+3,2,3,14)
-    rect(x+6,y+3,2,3,14)
-    pix(x,y+2,4)
-    pix(x+7,y+2,4)
+      -- PULO: Pernas encolhidas
+      rect(x+2, draw_y+10, 2, 2, 8) -- Perna azul
+      rect(x+5, draw_y+9, 2, 2, 8) -- Outra perna mais alta
+      -- Sapatos no ar
+      rect(x+2, draw_y+12, 2, 1, 4)
+      rect(x+5, draw_y+11, 2, 1, 4)
+  elseif anim==0 then
+      -- PARADO: Pernas juntas
+      rect(x+2, draw_y+10, 2, 1, 8)
+      rect(x+5, draw_y+10, 2, 1, 8)
+      -- Sapatos grandes parados
+      rect(x+1, draw_y+11, 3, 2, 4)
+      rect(x+5, draw_y+11, 3, 2, 4)
   else
-    rect(x,y+5,2,2,14)
-    rect(x+6,y+5,2,2,14)
-    pix(x,y+7,4)
-    pix(x+7,y+7,4)
+      -- ANDANDO: Passada larga
+      rect(x+1, draw_y+10, 2, 1, 8) -- Perna trás
+      rect(x+6, draw_y+10, 2, 1, 8) -- Perna frente
+      -- Sapatos andando
+      rect(x, draw_y+11, 3, 2, 4)
+      rect(x+6, draw_y+11, 3, 2, 4)
   end
-  end
+end
 
-  function update_particles()
-  for i=#particles,1,-1 do
-    local part=particles[i]
-    part.x=part.x+part.vx
-    part.y=part.y+part.vy
-    part.vy=part.vy+0.1
-    part.life=part.life-1
-    
-    if part.life<=0 then
-    table.remove(particles,i)
+    function update_particles()
+    for i=#particles,1,-1 do
+      local part=particles[i]
+      part.x=part.x+part.vx
+      part.y=part.y+part.vy
+      part.vy=part.vy+0.1
+      part.life=part.life-1
+      
+      if part.life<=0 then
+      table.remove(particles,i)
+      end
     end
-  end
-  end
+    end
 
-  function draw_particles()
-  for part in all(particles) do
-    pix(part.x-cam.x,part.y-cam.y,part.col)
-  end
-  end
+    function draw_particles()
+    for part in all(particles) do
+      pix(part.x-cam.x,part.y-cam.y,part.col)
+    end
+    end
 
-  function check_platform_collision(plat)
-  if p.vy>=0 and
-      p.x+p.w>plat.x and p.x<plat.x+plat.w and
-      p.y+p.h>=plat.y and p.y+p.h<=plat.y+4 then
-    p.y=plat.y-p.h
-    p.vy=0
-    p.grounded=true
-    return true
-  end
-  return false
-  end
+    function check_platform_collision(plat)
+    if p.vy>=0 and
+        p.x+p.w>plat.x and p.x<plat.x+plat.w and
+        p.y+p.h>=plat.y and p.y+p.h<=plat.y+4 then
+      p.y=plat.y-p.h
+      p.vy=0
+      p.grounded=true
+      return true
+    end
+    return false
+    end
 
-  function collide(a,b)
-  return a.x<b.x+b.w and
-          a.x+a.w>b.x and
-          a.y<b.y+b.h and
-          a.y+a.h>b.y
-  end
+    function collide(a,b)
+    return a.x<b.x+b.w and
+            a.x+a.w>b.x and
+            a.y<b.y+b.h and
+            a.y+a.h>b.y
+    end
 
-  function all(t)
-  local i=0
-  return function()
-    i=i+1
-    return t[i]
-  end
-  end
+    function all(t)
+    local i=0
+    return function()
+      i=i+1
+      return t[i]
+    end
+    end
 
-  function mid(a,b,c)
-  return math.max(a,math.min(b,c))
-  end
+    function mid(a,b,c)
+    return math.max(a,math.min(b,c))
+    end
 
-  init_level()
+    init_level()
