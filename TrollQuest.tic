@@ -19,7 +19,7 @@
     death_count=0
 
     -- Level data
-    level=5
+    level=1
     spikes={}
     platforms={}
     goal={}
