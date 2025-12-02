@@ -959,15 +959,47 @@
     print("Mortes: "..death_count,3,12,8)
     print("Setas: Mover  Z: Pular",3,131,0) 
     print("Setas: Mover  Z: Pular",2,130,15)
-    end
+    end   
 
-    function draw_background()
-    for i=0,136 do
-      local c=12+math.floor(i/40)
-      if c>15 then c=15 end
-      line(0,i,240,i,c)
-    end
-    end
+   function draw_background()
+  -- 1. Limpa a tela com AZUL CÉU (Cor 10)
+  cls(10)
+
+  -- 2. Sol (Fixo no canto da tela)
+  -- MUDANÇA AQUI: O segundo número (Y) mudou de 30 para 15.
+  circ(200, 15, 12, 3) -- Brilho externo (Laranja)
+  circ(200, 15, 7, 4)  -- Miolo do sol (Amarelo)
+
+  -- 3. Nuvens (Brancas - Cor 12)
+  local cloud_scroll = cam.x / 10
+  
+  for i=0, 4 do
+    -- Calcula posição X da nuvem
+    local x = (i * 70 - cloud_scroll) % 280 - 20
+    local y = 20 + (i * 13) % 30 
+    
+    -- Desenha a nuvem (3 círculos brancos juntos)
+    circ(x, y, 10, 12)     -- Branco
+    circ(x+8, y-5, 9, 12)  -- Branco
+    circ(x+16, y, 8, 12)   -- Branco
+  end
+
+  -- 4. Montanhas no horizonte 
+  local mountain_scroll = cam.x / 3
+  
+  for i=0, 5 do
+    local x = (i * 90 - mountain_scroll) % 320 - 50
+    
+    -- Corpo da montanha (Cinza Azulado Escuro - Cor 14)
+    tri(x, 136, x+50, 70, x+100, 136, 14)
+    
+    -- Topo de neve (Branco - Cor 12)
+    tri(x+35, 90, x+50, 70, x+65, 90, 12)
+  end
+  
+  -- 5. Graminha decorativa (Verde - Cor 6)
+  rect(0, 130, 240, 6, 6) 
+end
 
     function draw_platform(x,y,w,h,col1,col2)
     rectb(x,y,w,h,0)
