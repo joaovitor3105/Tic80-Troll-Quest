@@ -117,28 +117,28 @@ Este projeto proporcionou experiência prática em:
 <img src="https://github.com/JohnPss.png" width="100px;" alt="JohnPss"/><br />
 <sub><b>JohnPss</b></sub>
 </a><br />
-<sub>Desenvolvedor</sub>
+<sub>💻 Desenvolvedor</sub>
 </td>
 <td align="center">
 <a href="https://github.com/joaovitor3105">
 <img src="https://github.com/joaovitor3105.png" width="100px;" alt="João Vitor"/><br />
-<sub><b>João Vitor</b></sub>
+<sub><b>💻 João Vitor</b></sub>
 </a><br />
-<sub>Desenvolvedor</sub>
+<sub> Desenvolvedor</sub>
 </td>
 <td align="center">
 <a href="https://github.com/alvaroajs">
 <img src="https://github.com/alvaroajs.png" width="100px;" alt="Álvaro"/><br />
 <sub><b>Álvaro</b></sub>
 </a><br />
-<sub>Desenvolvedor</sub>
+<sub>🎵 Compositor Musical</sub>
 </td>
 <td align="center">
 <a href="https://github.com/BernardoSilvaAndrade">
 <img src="https://github.com/BernardoSilvaAndrade.png" width="100px;" alt="Bernardo"/><br />
 <sub><b>Bernardo Silva Andrade</b></sub>
 </a><br />
-<sub>Desenvolvedor</sub>
+<sub>🎨 Pixel Artist / Sprite Designer</sub>
 </td>
 </tr>
 </table>
