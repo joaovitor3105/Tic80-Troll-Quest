@@ -122,9 +122,9 @@ Este projeto proporcionou experiência prática em:
 <td align="center">
 <a href="https://github.com/joaovitor3105">
 <img src="https://github.com/joaovitor3105.png" width="100px;" alt="João Vitor"/><br />
-<sub><b>💻 João Vitor</b></sub>
+<sub><b>João Vitor</b></sub>
 </a><br />
-<sub> Desenvolvedor</sub>
+<sub>💻 Desenvolvedor</sub>
 </td>
 <td align="center">
 <a href="https://github.com/alvaroajs">
